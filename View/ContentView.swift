@@ -12,9 +12,8 @@ struct ContentView: View {
     //MARK: - PROPERTIES
     @State var task : String = ""
     
-    private var isDisabled : Bool {
-        task.isEmpty
-    }
+    @State private var showNewTaskItem : Bool = false
+    
     // CREATED SCRATCH PAD to manage or to interact with container and context.
     @Environment(\.managedObjectContext) private var viewContext
     
@@ -26,26 +25,7 @@ struct ContentView: View {
         animation: .default)
     private var items: FetchedResults<Item>
     
-    //MARK: - FUNCTIONS
-    
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(context: viewContext)
-            newItem.timestamp = Date()
-            newItem.id = UUID()
-            newItem.task = task
-            newItem.completion = false
-            do {
-                try viewContext.save()
-            } catch {
-                
-                let nsError = error as NSError
-                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
-            }
-            task = ""
-            hideKeyboard()
-        }
-    }
+   
     
     private func deleteItems(offsets: IndexSet) {
         withAnimation {
@@ -65,33 +45,30 @@ struct ContentView: View {
     var body: some View {
         NavigationView {
             ZStack {
+                //MARK: - MAINVIEW
                 VStack {
-                    VStack(spacing: 16) {
-                        TextField("New Task", text: $task)
-                            .padding()
-                            .background(
-                                Color(UIColor.systemGray6)
-                            ).cornerRadius(10)
-                        
-                        /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Container@*/VStack/*@END_MENU_TOKEN@*/ {
-                            Button(action: {
-                                addItem()
-                            }, label: {
-                                Spacer()
-                                Text("Save")
-                                    .frame(height: 50)
-                                    .cornerRadius(10)
-                                Spacer()
-                            })
-                            .disabled(isDisabled)
-                            .background(isDisabled ? Color.gray : Color.pink)
-                            .padding()
-                            .font(.headline)
-                            .foregroundColor(.white)
-                        }
-                        
-                    } // :- VSTACK
-                    .padding()
+                    //MARK: - HEADER
+                    Spacer(minLength: 80)
+                    //MARK: - NEW TASK BUTTON
+                    
+                    Button(action: {
+                        showNewTaskItem = true
+                    }, label: {
+                        Image(systemName: "plus.circle")
+                            .font(.system(size: 30, weight: .semibold, design: .rounded))
+                        Text("New Task")
+                    })
+                    .font(.system(size: 24, weight: .semibold, design: .rounded))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 15)
+                    .background(
+                        LinearGradient(gradient: Gradient(colors: [Color.pink, Color.blue]), startPoint: .topLeading, endPoint: .bottomTrailing)
+                            .clipShape(Capsule())
+                    )
+                    .shadow(color: Color(red: 0, green: 0, blue: 0, opacity: 0.25), radius: 8, x: 0, y: 4)
+                     // :- VSTACK
+                    
                     
                     List {
                         ForEach(items) { item in
@@ -113,6 +90,17 @@ struct ContentView: View {
                     .padding(.vertical, 0)
                     .frame(maxWidth: 640)
                 } // :- VSTACK
+                
+                //MARK: - NEW TASK ITEM
+                
+                if showNewTaskItem {
+                    BlankScreenView()
+                        .onTapGesture(perform: {
+                            showNewTaskItem = false
+                        })
+                    NewTaskItemView(isVisible: $showNewTaskItem)
+                }
+                 
             } // :- ZSTACK
             .onAppear() {
                 UITableView.appearance().backgroundColor = UIColor.blue
