@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct BackgroundImageView: View {
+    
     var body: some View {
         Image("rocket")
             .antialiased(true)
@@ -20,5 +21,6 @@ struct BackgroundImageView: View {
 struct BackgroundImageView_Previews: PreviewProvider {
     static var previews: some View {
         BackgroundImageView()
+            
     }
 }
